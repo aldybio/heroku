@@ -49,7 +49,7 @@ def text_preproc(x):
 #stopword
 stop_factory = StopWordRemoverFactory().get_stop_words() #load default stopword
 #more_stopword = ['yak','yg','udh','banget','tuh','ajah','lu','loe','lo','lg','gue','gw','ama','ttp','tetap','nih','aja','tu','ny','ah','saya','lah','nya','di','gitu','yang','ya','yaa','si','username','dia','jd','deh','sm','itu'] #menambahkan stopword
-data = stop_factory + more_stopword #menggabungkan stopword
+data = stop_factory #menggabungkan stopword
 dictionary = ArrayDictionary(data)
 stopwordplus = StopWordRemover(dictionary)
 
