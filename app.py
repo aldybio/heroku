@@ -77,7 +77,7 @@ def bySentece():
     clean_arr_text_stopword = list(map(remove_stopwording,clean_arr_text))
     clean_arr_text_stopword_stemming = list(map(stemming_word,clean_arr_text_stopword))
     x_sentence = vectorizer.transform(clean_arr_text_stopword_stemming)
-    y_pred = loaded_model.predict(x_sentence).toarray()
+    y_pred = (loaded_model.predict(x_sentence)).toarray()
     # loaded_model.predict(x_sentence, y_pred)
     resp = jsonify({"text":text,"prediction":int(y_pred[0])})
     return resp
