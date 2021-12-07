@@ -10,10 +10,11 @@ import re
 import string
 from flask import Flask,jsonify,request
 from sklearn.feature_extraction.text import TfidfVectorizer
-import xgboost
+from sklearn import svm
 import pickle
 from flask_cors import CORS
 import json
+from sklearn.model_selection import GridSearchCV
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory, StopWordRemover, ArrayDictionary
 
@@ -26,29 +27,23 @@ vectorizer = TfidfVectorizer(binary=True,vocabulary = tf1)
 vectorizer.fit(tf1)
 
 def text_preproc(x):
-  #case folding
+  #casefolding
   x = x.lower()
-  #remove url
-  #x = re.sub(r'https*\S+', ' ', x)
-  #remove username
-  # x = re.sub(r'<username>\s+', ' ', x)
   #remove mention
-  #x = re.sub(r'@\w+', ' ', x)
-  #remove emoji
-  #x = re.sub(r'([<])(?:(?=(\\?))\2.)*?([>])', ' ', x)
-  #remove hashtag
-  #x = re.sub(r'#\w+', ' ', x)
+  x = re.sub(r'@\w+', ' ', x)
   #remove punctuation
-  #x = re.sub('[%s]' % re.escape(string.punctuation), ' ', x)
-  #remove number
-  #x = re.sub(r'\d', '', x)
+  x = re.sub('[%s]' % re.escape(string.punctuation), ' ', x)
   #remove double space
-  #x = re.sub(r'\s{2,}', ' ', x)
+  x = re.sub(r'\s{2,}', ' ', x)
+  #remove number
+  x = re.sub(r'\d', '', x)
+  #remove hashtag
+  x = re.sub(r'#\w+', ' ', x)
   return x
 
 #stopword
 stop_factory = StopWordRemoverFactory().get_stop_words() #load default stopword
-#more_stopword = ['yak','yg','udh','banget','tuh','ajah','lu','loe','lo','lg','gue','gw','ama','ttp','tetap','nih','aja','tu','ny','ah','saya','lah','nya','di','gitu','yang','ya','yaa','si','username','dia','jd','deh','sm','itu'] #menambahkan stopword
+more_stopword = ['yak','yg','udh','banget','tuh','ajah','lu','loe','lo','lg','gue','gw','ama','ttp','tetap','nih','aja','tu','ny','ah','saya','lah','nya','di','gitu','yang','ya','yaa','si','dia','jd','deh','sm','itu'] #menambahkan stopword
 data = stop_factory #menggabungkan stopword
 dictionary = ArrayDictionary(data)
 stopwordplus = StopWordRemover(dictionary)
@@ -82,31 +77,6 @@ def bySentece():
     resp = jsonify({"text":text,"prediction":int(y_pred[0])})
     return resp
 
-@app.route('/api/file', methods=["POST"])
-def byFile():
-    request_data = request.get_json()
-    data_komentar = request_data['data']
-    
-    arr_text = []
-
-    for f in data_komentar :
-      arr_text.append(f)
-
-    clean_arr_text = list(map(text_preproc,arr_text))
-    clean_arr_text_stopword = list(map(remove_stopwording,clean_arr_text))
-    clean_arr_text_stopword_stemming = list(map(stemming_word,clean_arr_text_stopword))
-    x_sentence = vectorizer.transform(clean_arr_text_stopword_stemming)
-    y_pred = loaded_model.predict(x_sentence)
-
-    kalimats = []
-    prediksis = []
-    for count,f in enumerate(y_pred) :
-      kalimat = arr_text[count],
-      prediksi = int(f)
-      kalimats.append(kalimat)
-      prediksis.append(prediksi)
-
-    return jsonify({"text":kalimats,"prediction":prediksis})
 
 @app.route('/')
 def index():
